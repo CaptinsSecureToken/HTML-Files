@@ -1,0 +1,2289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HI-DAO v5.0 × Sovereign PCL × SLIPS - Human-Intelligence Accelerator DAO</title>
+    <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl-fast.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tweetnacl-util@0.15.1/nacl-util.min.js"></script>
+    <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-rows: 70px 1fr;
+            height: 100vh;
+        }
+
+        header {
+            background: rgba(26, 26, 46, 0.95);
+            border-bottom: 2px solid #2a2a3e;
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            gap: 30px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .protocol-badges {
+            display: flex;
+            gap: 8px;
+        }
+
+        .protocol-badge {
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid #667eea;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .protocol-badge.pcl {
+            border-color: #10b981;
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .protocol-badge.slips {
+            border-color: #8b5cf6;
+            color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 5px;
+            flex: 1;
+        }
+
+        .nav-tab {
+            padding: 10px 18px;
+            background: transparent;
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-tab:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #e0e0e0;
+        }
+
+        .nav-tab.active {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .main-content {
+            overflow: hidden;
+        }
+
+        .view {
+            display: none;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Dashboard Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .stat-card {
+            background: rgba(26, 26, 46, 0.6);
+            border: 1px solid #2a2a3e;
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            border-color: #667eea;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-subtitle {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        /* Submission View */
+        .submission-layout {
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 20px;
+            height: 100%;
+            padding: 20px;
+        }
+
+        .panel {
+            background: rgba(26, 26, 46, 0.6);
+            border: 1px solid #2a2a3e;
+            border-radius: 12px;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .section {
+            margin-bottom: 28px;
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #2a2a3e;
+            border-radius: 8px;
+            padding: 12px;
+            color: #e0e0e0;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: 'Courier New', monospace;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-top: 14px;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        /* Code Editor */
+        .code-editor {
+            background: #1e1e1e;
+            border: 1px solid #2a2a3e;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #d4d4d4;
+            min-height: 400px;
+            overflow: auto;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #2a2a3e;
+        }
+
+        .code-lang {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* PCL Graph */
+        #cy {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            min-height: 500px;
+            border: 1px solid #2a2a3e;
+        }
+
+        /* Contribution Types */
+        .contrib-type {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .contrib-type.code {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .contrib-type.dataset {
+            background: #10b981;
+            color: white;
+        }
+
+        .contrib-type.model {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .contrib-type.reasoning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .contrib-type.agent {
+            background: #ec4899;
+            color: white;
+        }
+
+        /* Pulse Types */
+        .pulse-type {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .pulse-type.FRAME {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .pulse-type.CONTEXT {
+            background: #10b981;
+            color: white;
+        }
+
+        .pulse-type.ASSUMPTION {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .pulse-type.INFERENCE {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .pulse-type.CHECK {
+            background: #06b6d4;
+            color: white;
+        }
+
+        .pulse-type.CONFLICT {
+            background: #ef4444;
+            color: white;
+        }
+
+        .pulse-type.DECISION {
+            background: #ec4899;
+            color: white;
+        }
+
+        .pulse-type.FINAL {
+            background: #14b8a6;
+            color: white;
+        }
+
+        .pulse-type.EVALUATION {
+            background: #a855f7;
+            color: white;
+        }
+
+        .pulse-type.IMPACT {
+            background: #0ea5e9;
+            color: white;
+        }
+
+        /* Contribution List */
+        .contrib-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .contrib-item {
+            background: rgba(42, 42, 62, 0.4);
+            border: 1px solid #3a3a5e;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .contrib-item:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(4px);
+        }
+
+        .contrib-item.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .contrib-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .contrib-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .contrib-meta {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 6px;
+        }
+
+        .contrib-score {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        /* Trace List */
+        .trace-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .trace-item {
+            background: rgba(42, 42, 62, 0.4);
+            border: 1px solid #3a3a5e;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .trace-item:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .trace-item.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        /* Marketplace */
+        .marketplace-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .market-item {
+            background: rgba(26, 26, 46, 0.6);
+            border: 1px solid #2a2a3e;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .market-item:hover {
+            border-color: #667eea;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+        }
+
+        .market-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .market-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .market-price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .market-desc {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .market-stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #2a2a3e;
+        }
+
+        .market-stat {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .market-stat strong {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2a2a3e 100%);
+            padding: 35px;
+            border: 2px solid #667eea;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+        }
+
+        .modal h2 {
+            color: #667eea;
+            margin-bottom: 24px;
+            font-size: 1.5rem;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            transition: all 0.2s;
+        }
+
+        .close:hover {
+            color: #fff;
+            transform: scale(1.1);
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: rgba(26, 26, 46, 0.95);
+            border: 1px solid #2a2a3e;
+            border-radius: 8px;
+            padding: 14px 22px;
+            margin-bottom: 12px;
+            min-width: 300px;
+            opacity: 1;
+            transition: opacity 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .toast.success {
+            border-color: #10b981;
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .toast.error {
+            border-color: #ef4444;
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .toast.warning {
+            border-color: #f59e0b;
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .toast.info {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Badges */
+        .verified-badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        .invalid-badge {
+            display: inline-block;
+            background: #ef4444;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        .slips-badge {
+            display: inline-block;
+            background: #8b5cf6;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-2 {
+            margin-top: 16px;
+        }
+
+        .mb-2 {
+            margin-bottom: 16px;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(42, 42, 62, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.7);
+        }
+
+        /* Impact Visualization */
+        .impact-meter {
+            width: 100%;
+            height: 24px;
+            background: rgba(42, 42, 62, 0.4);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .impact-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #667eea 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        /* Token Display */
+        .token-display {
+            display: flex;
+            gap: 20px;
+            padding: 16px;
+            background: rgba(42, 42, 62, 0.3);
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+
+        .token-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .token-label {
+            font-size: 0.75rem;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .token-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Autonomous Loop Indicator */
+        .loop-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .loop-indicator::before {
+            content: '⟳';
+            font-size: 1rem;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* File Upload Zone */
+        .upload-zone {
+            border: 2px dashed #2a2a3e;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .upload-zone:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-zone.dragging {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .upload-text {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">HI-DAO v5.0</div>
+            <div class="protocol-badges">
+                <span class="protocol-badge">Human-Intelligence Accelerator</span>
+                <span class="protocol-badge pcl">PCL Protocol</span>
+                <span class="protocol-badge slips">SLIPS Compliant</span>
+            </div>
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-view="dashboard">Dashboard</button>
+                <button class="nav-tab" data-view="submit">Submit</button>
+                <button class="nav-tab" data-view="evaluate">Evaluate</button>
+                <button class="nav-tab" data-view="marketplace">Marketplace</button>
+                <button class="nav-tab" data-view="governance">Governance</button>
+                <button class="nav-tab" data-view="pcl">PCL Traces</button>
+            </nav>
+            <div class="header-actions">
+                <button class="btn btn-secondary" id="identity-btn">
+                    <span id="did-short">No Identity</span>
+                </button>
+                <button class="btn" id="connect-wallet-btn">Connect Wallet</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Dashboard View -->
+            <div id="dashboard" class="view active">
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Contributions</div>
+                        <div class="stat-value" id="stat-contributions">0</div>
+                        <div class="stat-subtitle">Across all categories</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">HI Tokens Distributed</div>
+                        <div class="stat-value" id="stat-hi-tokens">0</div>
+                        <div class="stat-subtitle">Real-time rewards</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Impact Derivatives (iHI)</div>
+                        <div class="stat-value" id="stat-ihi-tokens">0</div>
+                        <div class="stat-subtitle">Long-term value tracking</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Active AI Evaluators</div>
+                        <div class="stat-value" id="stat-evaluators">3</div>
+                        <div class="stat-subtitle">Meta-AI consensus scoring</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Autonomous Loops</div>
+                        <div class="stat-value" id="stat-loops">0</div>
+                        <div class="stat-subtitle">Self-propagating agents</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Global Intelligence Score</div>
+                        <div class="stat-value" id="stat-intelligence">100</div>
+                        <div class="stat-subtitle">Collective impact metric</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit View -->
+            <div id="submit" class="view">
+                <div class="submission-layout">
+                    <div class="panel">
+                        <div class="section">
+                            <div class="section-title">Contribution Type</div>
+                            <select id="contrib-type">
+                                <option value="code">Code / Script</option>
+                                <option value="dataset">Dataset</option>
+                                <option value="model">AI Model</option>
+                                <option value="reasoning">Reasoning Pattern</option>
+                                <option value="agent">AI Agent</option>
+                            </select>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">Basic Information</div>
+                            <label>Title</label>
+                            <input type="text" id="contrib-title" placeholder="e.g., Advanced Pattern Recognition Algorithm">
+
+                            <label>Description</label>
+                            <textarea id="contrib-description" placeholder="Describe your contribution's purpose, methodology, and potential impact..."></textarea>
+
+                            <label>Tags (comma-separated)</label>
+                            <input type="text" id="contrib-tags" placeholder="machine-learning, optimization, neural-networks">
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">Upload / Code</div>
+                            <div class="upload-zone" id="upload-zone">
+                                <div class="upload-icon">📁</div>
+                                <div class="upload-text">
+                                    Drop files here or click to browse<br>
+                                    <small>Supports: .py, .js, .ipynb, .json, .csv, .zip</small>
+                                </div>
+                                <input type="file" id="file-input" style="display: none;" multiple>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">Options</div>
+                            <label>
+                                <input type="checkbox" id="enable-loop" style="width: auto; margin-right: 8px;">
+                                Enable Autonomous Loop (AI agents will extend this contribution)
+                            </label>
+                            <label>
+                                <input type="checkbox" id="marketplace-list" style="width: auto; margin-right: 8px;">
+                                List in Knowledge Marketplace
+                            </label>
+                            <label>
+                                <input type="checkbox" id="open-license" style="width: auto; margin-right: 8px;" checked>
+                                Open License (MIT/Apache 2.0)
+                            </label>
+                        </div>
+
+                        <button class="btn btn-success" id="submit-contribution" style="width: 100%; margin-top: 20px;">
+                            Submit to HI-DAO
+                        </button>
+                    </div>
+
+                    <div class="panel">
+                        <div class="section">
+                            <div class="section-title">Code Preview</div>
+                            <div class="code-editor">
+                                <div class="code-header">
+                                    <span class="code-lang" id="code-lang">Python</span>
+                                    <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;" id="format-code">Format</button>
+                                </div>
+                                <textarea id="code-content" style="width: 100%; min-height: 350px; background: transparent; border: none; color: #d4d4d4; font-family: 'Courier New', monospace; resize: none;">
+# Example: Advanced Intelligence Algorithm
+def advanced_reasoning(input_data):
+    """
+    Implements novel reasoning pattern for AI cognition.
+    Uses meta-learning and symbolic integration.
+    """
+    # Your innovative code here
+    processed = meta_analyze(input_data)
+    result = symbolic_integrate(processed)
+    return optimize(result)
+
+if __name__ == "__main__":
+    data = load_dataset()
+    output = advanced_reasoning(data)
+    print(f"Intelligence Score: {output.score}")
+                            </textarea>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">Expected Impact</div>
+                            <div class="impact-meter">
+                                <div class="impact-fill" id="impact-preview" style="width: 0%;">0%</div>
+                            </div>
+                            <div class="token-display">
+                                <div class="token-item">
+                                    <div class="token-label">Estimated HI Tokens</div>
+                                    <div class="token-value" id="estimated-hi">0</div>
+                                </div>
+                                <div class="token-item">
+                                    <div class="token-label">Potential iHI</div>
+                                    <div class="token-value" id="estimated-ihi">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evaluate View -->
+            <div id="evaluate" class="view">
+                <div class="submission-layout">
+                    <div class="panel">
+                        <div class="section">
+                            <div class="section-title">Pending Contributions</div>
+                            <div class="contrib-list" id="pending-contribs">
+                                <!-- Contributions will be listed here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="section">
+                            <div class="section-title">AI Evaluation Results</div>
+                            <div id="evaluation-results">
+                                <p style="color: #888; text-align: center; padding: 40px;">
+                                    Select a contribution to view AI evaluations
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">Manual Review (DAO Governance)</div>
+                            <label>Your Score (0-100)</label>
+                            <input type="number" id="manual-score" min="0" max="100" placeholder="85">
+
+                            <label>Review Comments</label>
+                            <textarea id="review-comments" placeholder="Provide constructive feedback..."></textarea>
+
+                            <button class="btn" id="submit-review" style="width: 100%; margin-top: 16px;">
+                                Submit Review
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marketplace View -->
+            <div id="marketplace" class="view">
+                <div style="padding: 20px;">
+                    <div class="section-title">Knowledge Marketplace</div>
+                    <div class="marketplace-grid" id="marketplace-grid">
+                        <!-- Market items will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Governance View -->
+            <div id="governance" class="view">
+                <div class="submission-layout">
+                    <div class="panel">
+                        <div class="section">
+                            <div class="section-title">Active Proposals</div>
+                            <div id="proposals-list">
+                                <!-- Governance proposals will be listed here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="section">
+                            <div class="section-title">Create Proposal</div>
+                            <label>Proposal Type</label>
+                            <select id="proposal-type">
+                                <option value="metric-update">Update Scoring Metrics</option>
+                                <option value="treasury">Treasury Allocation</option>
+                                <option value="protocol">Protocol Upgrade</option>
+                                <option value="evaluator">Add AI Evaluator</option>
+                            </select>
+
+                            <label>Title</label>
+                            <input type="text" id="proposal-title" placeholder="e.g., Increase weight for novel reasoning patterns">
+
+                            <label>Description</label>
+                            <textarea id="proposal-description" placeholder="Detailed proposal description..."></textarea>
+
+                            <button class="btn" id="create-proposal" style="width: 100%; margin-top: 16px;">
+                                Create Proposal
+                            </button>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">Your Voting Power</div>
+                            <div class="token-display">
+                                <div class="token-item">
+                                    <div class="token-label">Reputation</div>
+                                    <div class="token-value" id="user-reputation">0</div>
+                                </div>
+                                <div class="token-item">
+                                    <div class="token-label">Voting Weight</div>
+                                    <div class="token-value" id="user-voting-power">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PCL Traces View -->
+            <div id="pcl" class="view">
+                <div class="submission-layout">
+                    <div class="panel">
+                        <div class="section">
+                            <div class="section-title">Create New Trace</div>
+                            <label>Trace Name</label>
+                            <input type="text" id="trace-name" placeholder="e.g., Algorithm Development Process">
+                            <button class="btn btn-success" id="create-trace" style="width: 100%; margin-top: 12px;">
+                                Create Trace
+                            </button>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">Your Traces</div>
+                            <div class="trace-list" id="trace-list">
+                                <!-- Traces will be listed here -->
+                            </div>
+                        </div>
+
+                        <div class="section" id="pulse-creator" style="display: none;">
+                            <div class="section-title">Add Pulse</div>
+                            <label>Pulse Type</label>
+                            <select id="pulse-type">
+                                <option value="FRAME">Frame</option>
+                                <option value="CONTEXT">Context</option>
+                                <option value="ASSUMPTION">Assumption</option>
+                                <option value="INFERENCE">Inference</option>
+                                <option value="CHECK">Check</option>
+                                <option value="CONFLICT">Conflict</option>
+                                <option value="DECISION">Decision</option>
+                                <option value="EVALUATION">Evaluation</option>
+                                <option value="IMPACT">Impact</option>
+                                <option value="FINAL">Final</option>
+                            </select>
+
+                            <label>Content</label>
+                            <textarea id="pulse-content" placeholder="Describe this reasoning step..."></textarea>
+
+                            <button class="btn" id="add-pulse" style="width: 100%; margin-top: 12px;">
+                                Add Pulse
+                            </button>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-title">Stats</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div>
+                                    <div class="stat-label">Traces</div>
+                                    <div class="stat-value" style="font-size: 1.5rem;" id="stat-traces">0</div>
+                                </div>
+                                <div>
+                                    <div class="stat-label">Pulses</div>
+                                    <div class="stat-value" style="font-size: 1.5rem;" id="stat-pulses">0</div>
+                                </div>
+                                <div>
+                                    <div class="stat-label">Verified</div>
+                                    <div class="stat-value" style="font-size: 1.5rem; color: #10b981;" id="stat-verified">0</div>
+                                </div>
+                                <div>
+                                    <div class="stat-label">Invalid</div>
+                                    <div class="stat-value" style="font-size: 1.5rem; color: #ef4444;" id="stat-invalid">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="section">
+                            <div class="section-title">Trace Visualization</div>
+                            <div id="cy"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Identity Modal -->
+    <div id="identity-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-identity-modal">&times;</span>
+            <h2>Decentralized Identity (DID)</h2>
+
+            <div id="identity-create">
+                <p style="color: #aaa; margin-bottom: 20px;">
+                    Create your cryptographic identity to participate in HI-DAO. Your identity is Ed25519-based and fully sovereign.
+                </p>
+                <label>Display Name</label>
+                <input type="text" id="identity-name" placeholder="Your Name or Handle">
+                <button class="btn" id="generate-did-btn" style="width: 100%; margin-top: 16px;">
+                    Generate DID
+                </button>
+            </div>
+
+            <div id="identity-info" class="hidden">
+                <div style="margin-bottom: 20px;">
+                    <label>Your DID</label>
+                    <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; word-break: break-all; font-family: monospace; font-size: 0.8rem;" id="full-did"></div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label>Public Key</label>
+                    <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; word-break: break-all; font-family: monospace; font-size: 0.8rem;" id="public-key"></div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label>Private Key (Keep Secret!)</label>
+                    <div style="background: rgba(239,68,68,0.1); padding: 12px; border-radius: 6px; word-break: break-all; font-family: monospace; font-size: 0.8rem; border: 1px solid #ef4444;" id="private-key"></div>
+                </div>
+
+                <button class="btn btn-secondary" id="export-identity-btn" style="width: 100%;">
+                    Export Identity (JSON)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ═══════════════════════════════════════════════════════════
+            // SLIPS PROTOCOL CONFIGURATION
+            // ═══════════════════════════════════════════════════════════
+
+            const SLIPS = {
+                VERSION: '1.0.0',
+                SCHEMA: 'HI-DAO-PCL-SLIPS',
+                RECORD_TYPE: 'REASONING_PULSE'
+            };
+
+            // ═══════════════════════════════════════════════════════════
+            // STATE MANAGEMENT
+            // ═══════════════════════════════════════════════════════════
+
+            const State = {
+                identity: null,
+                contributions: {},
+                evaluations: {},
+                marketplace: {},
+                governance: {
+                    proposals: [],
+                    votes: {}
+                },
+                traces: {},
+                currentTraceId: null,
+                cy: null,
+                stats: {
+                    contributions: 0,
+                    hiTokens: 0,
+                    ihiTokens: 0,
+                    loops: 0,
+                    intelligence: 100,
+                    traces: 0,
+                    pulses: 0,
+                    verified: 0,
+                    invalid: 0
+                },
+                wallet: {
+                    connected: false,
+                    address: null,
+                    chain: null
+                }
+            };
+
+            // ═══════════════════════════════════════════════════════════
+            // CRYPTOGRAPHY (Ed25519)
+            // ═══════════════════════════════════════════════════════════
+
+            const Crypto = {
+                generateKeyPair() {
+                    const keyPair = nacl.sign.keyPair();
+                    return {
+                        publicKey: nacl.util.encodeBase64(keyPair.publicKey),
+                        privateKey: nacl.util.encodeBase64(keyPair.secretKey)
+                    };
+                },
+
+                sign(privateKeyBase64, message) {
+                    const privateKey = nacl.util.decodeBase64(privateKeyBase64);
+                    const messageUint8 = nacl.util.decodeUTF8(message);
+                    const signature = nacl.sign.detached(messageUint8, privateKey);
+                    return nacl.util.encodeBase64(signature);
+                },
+
+                verify(publicKeyBase64, message, signatureBase64) {
+                    try {
+                        const publicKey = nacl.util.decodeBase64(publicKeyBase64);
+                        const messageUint8 = nacl.util.decodeUTF8(message);
+                        const signature = nacl.util.decodeBase64(signatureBase64);
+                        return nacl.sign.detached.verify(messageUint8, signature, publicKey);
+                    } catch (e) {
+                        return false;
+                    }
+                },
+
+                hash(data) {
+                    const msgUint8 = nacl.util.decodeUTF8(data);
+                    const hash = nacl.hash(msgUint8);
+                    return nacl.util.encodeBase64(hash);
+                },
+
+                canonicalize(obj) {
+                    const copy = JSON.parse(JSON.stringify(obj));
+                    delete copy.signature;
+                    delete copy.canonicalHash;
+
+                    const sortedKeys = (o) => {
+                        if (typeof o !== 'object' || o === null) return o;
+                        if (Array.isArray(o)) return o.map(sortedKeys);
+                        return Object.keys(o).sort().reduce((acc, key) => {
+                            acc[key] = sortedKeys(o[key]);
+                            return acc;
+                        }, {});
+                    };
+
+                    return JSON.stringify(sortedKeys(copy));
+                }
+            };
+
+            // ═══════════════════════════════════════════════════════════
+            // IDENTITY MANAGEMENT
+            // ═══════════════════════════════════════════════════════════
+
+            const Identity = {
+                create(name) {
+                    const keyPair = Crypto.generateKeyPair();
+                    const did = `did:key:${keyPair.publicKey.substring(0, 32)}`;
+
+                    State.identity = {
+                        did: did,
+                        displayName: name,
+                        publicKey: keyPair.publicKey,
+                        privateKey: keyPair.privateKey,
+                        created: Date.now()
+                    };
+
+                    this.save();
+                    UI.updateIdentityDisplay();
+                    UI.toast('Identity created successfully!', 'success');
+                },
+
+                save() {
+                    if (State.identity) {
+                        localStorage.setItem('hi_dao_identity', JSON.stringify(State.identity));
+                    }
+                },
+
+                load() {
+                    const stored = localStorage.getItem('hi_dao_identity');
+                    if (stored) {
+                        State.identity = JSON.parse(stored);
+                        UI.updateIdentityDisplay();
+                    }
+                },
+
+                export () {
+                    if (!State.identity) {
+                        UI.toast('No identity to export', 'warning');
+                        return;
+                    }
+
+                    const dataStr = JSON.stringify(State.identity, null, 2);
+                    const blob = new Blob([dataStr], {
+                        type: 'application/json'
+                    });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `hi_dao_identity_${Date.now()}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+
+                    UI.toast('Identity exported!', 'success');
+                }
+            };
+
+            // ═══════════════════════════════════════════════════════════
+            // HI-DAO CONTRIBUTION SYSTEM
+            // ═══════════════════════════════════════════════════════════
+
+            const HIDAO = {
+                submitContribution(data) {
+                    if (!State.identity) {
+                        UI.toast('Please create an identity first', 'warning');
+                        return;
+                    }
+
+                    const contrib = {
+                        id: `contrib_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                        type: data.type,
+                        title: data.title,
+                        description: data.description,
+                        tags: data.tags,
+                        code: data.code,
+                        files: data.files || [],
+                        author: State.identity.publicKey,
+                        authorDID: State.identity.did,
+                        timestamp: Date.now(),
+                        enableLoop: data.enableLoop,
+                        marketplaceListed: data.marketplaceListed,
+                        license: data.license,
+                        status: 'pending',
+                        evaluations: [],
+                        score: 0,
+                        hiTokens: 0,
+                        ihiTokens: 0
+                    };
+
+                    // Sign the contribution
+                    const canonical = Crypto.canonicalize(contrib);
+                    contrib.canonicalHash = Crypto.hash(canonical);
+                    contrib.signature = Crypto.sign(State.identity.privateKey, canonical);
+
+                    State.contributions[contrib.id] = contrib;
+                    State.stats.contributions++;
+
+                    // Trigger AI evaluation
+                    this.evaluateContribution(contrib.id);
+
+                    // Create PCL trace for this contribution
+                    this.createContributionTrace(contrib);
+
+                    this.saveToStorage();
+                    UI.updateStats();
+                    UI.toast('Contribution submitted successfully!', 'success');
+
+                    return contrib;
+                },
+
+                evaluateContribution(contribId) {
+                    const contrib = State.contributions[contribId];
+                    if (!contrib) return;
+
+                    // Simulate AI evaluation (in production, this would call actual AI models)
+                    const evaluation = {
+                        id: `eval_${Date.now()}`,
+                        contribId: contribId,
+                        evaluators: [{
+                                name: 'Meta-AI-Alpha',
+                                score: Math.floor(Math.random() * 30) + 70, // 70-100
+                                reasoning: 'Novel approach with strong theoretical foundation. Code quality is excellent.'
+                            },
+                            {
+                                name: 'Meta-AI-Beta',
+                                score: Math.floor(Math.random() * 30) + 65, // 65-95
+                                reasoning: 'Innovative methodology. Potential for significant impact on AI reasoning.'
+                            },
+                            {
+                                name: 'Meta-AI-Gamma',
+                                score: Math.floor(Math.random() * 30) + 68, // 68-98
+                                reasoning: 'Well-documented and reproducible. Addresses important problem in the field.'
+                            }
+                        ],
+                        consensusScore: 0,
+                        timestamp: Date.now()
+                    };
+
+                    // Calculate consensus score
+                    const avgScore = evaluation.evaluators.reduce((sum, e) => sum + e.score, 0) / evaluation.evaluators.length;
+                    evaluation.consensusScore = Math.round(avgScore);
+
+                    State.evaluations[contribId] = evaluation;
+                    contrib.evaluations.push(evaluation);
+                    contrib.score = evaluation.consensusScore;
+
+                    // Allocate rewards based on score
+                    this.allocateRewards(contrib);
+
+                    // If score is high and loop enabled, create autonomous loop
+                    if (contrib.score >= 80 && contrib.enableLoop) {
+                        this.createAutonomousLoop(contrib);
+                    }
+
+                    // If marketplace listed, add to marketplace
+                    if (contrib.marketplaceListed) {
+                        this.addToMarketplace(contrib);
+                    }
+
+                    this.saveToStorage();
+                },
+
+                allocateRewards(contrib) {
+                    // HI Tokens (immediate impact)
+                    const hiTokens = Math.floor(contrib.score * 10);
+                    contrib.hiTokens = hiTokens;
+                    State.stats.hiTokens += hiTokens;
+
+                    // iHI Tokens (long-term impact derivatives)
+                    const ihiTokens = Math.floor(contrib.score * 5);
+                    contrib.ihiTokens = ihiTokens;
+                    State.stats.ihiTokens += ihiTokens;
+
+                    // Update global intelligence score
+                    State.stats.intelligence += Math.floor(contrib.score / 10);
+
+                    UI.updateStats();
+                },
+
+                createAutonomousLoop(contrib) {
+                    const loop = {
+                        id: `loop_${Date.now()}`,
+                        contribId: contrib.id,
+                        status: 'active',
+                        iterations: 0,
+                        created: Date.now(),
+                        lastRun: Date.now()
+                    };
+
+                    State.stats.loops++;
+                    UI.toast(`Autonomous loop created for "${contrib.title}"`, 'success');
+                },
+
+                createContributionTrace(contrib) {
+                    const trace = PCL.createTrace(`Contribution: ${contrib.title}`);
+
+                    // Add initial pulses documenting the contribution process
+                    PCL.addPulse(trace.id, {
+                        type: 'FRAME',
+                        content: `Initiating contribution submission: ${contrib.title}`
+                    });
+
+                    PCL.addPulse(trace.id, {
+                        type: 'CONTEXT',
+                        content: `Type: ${contrib.type}, Author: ${contrib.authorDID}`
+                    });
+
+                    PCL.addPulse(trace.id, {
+                        type: 'EVALUATION',
+                        content: 'Submitted for Meta-AI consensus evaluation'
+                    });
+                },
+
+                addToMarketplace(contrib) {
+                    const marketItem = {
+                        id: contrib.id,
+                        title: contrib.title,
+                        description: contrib.description,
+                        type: contrib.type,
+                        price: Math.floor(contrib.score * 100), // Price in HI tokens
+                        author: contrib.authorDID,
+                        score: contrib.score,
+                        downloads: 0,
+                        listed: Date.now()
+                    };
+
+                    State.marketplace[contrib.id] = marketItem;
+                    UI.renderMarketplace();
+                },
+
+                saveToStorage() {
+                    localStorage.setItem('hi_dao_contributions', JSON.stringify(State.contributions));
+                    localStorage.setItem('hi_dao_evaluations', JSON.stringify(State.evaluations));
+                    localStorage.setItem('hi_dao_marketplace', JSON.stringify(State.marketplace));
+                    localStorage.setItem('hi_dao_stats', JSON.stringify(State.stats));
+                },
+
+                loadFromStorage() {
+                    const contribs = localStorage.getItem('hi_dao_contributions');
+                    if (contribs) State.contributions = JSON.parse(contribs);
+
+                    const evals = localStorage.getItem('hi_dao_evaluations');
+                    if (evals) State.evaluations = JSON.parse(evals);
+
+                    const market = localStorage.getItem('hi_dao_marketplace');
+                    if (market) State.marketplace = JSON.parse(market);
+
+                    const stats = localStorage.getItem('hi_dao_stats');
+                    if (stats) State.stats = JSON.parse(stats);
+                }
+            };
+
+            // ═══════════════════════════════════════════════════════════
+            // PCL (PROVENANCE CHAIN LOGIC) SYSTEM
+            // ═══════════════════════════════════════════════════════════
+
+            const PCL = {
+                init() {
+                    this.loadTraces();
+                    this.initCytoscape();
+                    this.renderTraceList();
+                    this.updateStats();
+                },
+
+                createTrace(name) {
+                    if (!State.identity) {
+                        UI.toast('Please create an identity first', 'warning');
+                        return null;
+                    }
+
+                    const trace = {
+                        id: `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                        name: name,
+                        author: State.identity.publicKey,
+                        authorDID: State.identity.did,
+                        created: Date.now(),
+                        pulses: [],
+                        slipsVersion: SLIPS.VERSION,
+                        slipsSchema: SLIPS.SCHEMA
+                    };
+
+                    State.traces[trace.id] = trace;
+                    State.stats.traces++;
+
+                    this.saveTraces();
+                    this.renderTraceList();
+                    this.updateStats();
+
+                    UI.toast(`Trace "${name}" created`, 'success');
+                    return trace;
+                },
+
+                addPulse(traceId, pulseData) {
+                    if (!State.identity) {
+                        UI.toast('Please create an identity first', 'warning');
+                        return null;
+                    }
+
+                    const trace = State.traces[traceId];
+                    if (!trace) return null;
+
+                    const pulse = {
+                        id: `pulse_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                        type: pulseData.type,
+                        payload: {
+                            content: pulseData.content,
+                            metadata: pulseData.metadata || {}
+                        },
+                        author: State.identity.publicKey,
+                        timestamp: Date.now(),
+                        dependsOn: pulseData.dependsOn || [],
+                        slipsRecordType: SLIPS.RECORD_TYPE
+                    };
+
+                    // Sign the pulse
+                    const canonical = Crypto.canonicalize(pulse);
+                    pulse.canonicalHash = Crypto.hash(canonical);
+                    pulse.signature = Crypto.sign(State.identity.privateKey, canonical);
+
+                    // Verify immediately
+                    const isVerified = Crypto.verify(pulse.author, canonical, pulse.signature);
+                    if (isVerified) {
+                        State.stats.verified++;
+                    } else {
+                        State.stats.invalid++;
+                    }
+
+                    trace.pulses.push(pulse);
+                    State.stats.pulses++;
+
+                    this.saveTraces();
+                    this.renderGraph();
+                    this.updateStats();
+
+                    return pulse;
+                },
+
+                selectTrace(traceId) {
+                    State.currentTraceId = traceId;
+                    this.renderGraph();
+
+                    // Update UI
+                    document.querySelectorAll('.trace-item').forEach(item => {
+                        item.classList.toggle('active', item.dataset.traceId === traceId);
+                    });
+
+                    document.getElementById('pulse-creator').style.display = 'block';
+                },
+
+                saveTraces() {
+                    localStorage.setItem('hi_dao_traces', JSON.stringify(State.traces));
+                    localStorage.setItem('hi_dao_stats_pcl', JSON.stringify({
+                        traces: State.stats.traces,
+                        pulses: State.stats.pulses,
+                        verified: State.stats.verified,
+                        invalid: State.stats.invalid
+                    }));
+                },
+
+                loadTraces() {
+                    const stored = localStorage.getItem('hi_dao_traces');
+                    if (stored) {
+                        State.traces = JSON.parse(stored);
+                    }
+
+                    const stats = localStorage.getItem('hi_dao_stats_pcl');
+                    if (stats) {
+                        const parsed = JSON.parse(stats);
+                        State.stats.traces = parsed.traces;
+                        State.stats.pulses = parsed.pulses;
+                        State.stats.verified = parsed.verified;
+                        State.stats.invalid = parsed.invalid;
+                    }
+                },
+
+                renderTraceList() {
+                    const list = document.getElementById('trace-list');
+                    list.innerHTML = '';
+
+                    const traces = Object.values(State.traces);
+                    if (traces.length === 0) {
+                        list.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">No traces yet. Create your first trace!</p>';
+                        return;
+                    }
+
+                    traces.forEach(trace => {
+                        const item = document.createElement('div');
+                        item.className = 'trace-item';
+                        item.dataset.traceId = trace.id;
+
+                        const verified = trace.pulses.filter(p => {
+                            const canonical = Crypto.canonicalize(p);
+                            const hash = Crypto.hash(canonical);
+                            return hash === p.canonicalHash && Crypto.verify(p.author, canonical, p.signature);
+                        }).length;
+
+                        item.innerHTML = `
+                <div style="font-weight: 600;">${trace.name}</div>
+                <div style="font-size: 0.75rem; color: #888; margin-top: 4px;">
+                    ${trace.pulses.length} pulses • ${verified} verified
+                    <span class="verified-badge">✓ SLIPS</span>
+                </div>
+                <div style="font-size: 0.7rem; color: #666; margin-top: 4px;">
+                    ${new Date(trace.created).toLocaleDateString()}
+                </div>
+            `;
+
+                        item.addEventListener('click', () => this.selectTrace(trace.id));
+                        list.appendChild(item);
+                    });
+                },
+
+                updateStats() {
+                    document.getElementById('stat-traces').textContent = State.stats.traces;
+                    document.getElementById('stat-pulses').textContent = State.stats.pulses;
+                    document.getElementById('stat-verified').textContent = State.stats.verified;
+                    document.getElementById('stat-invalid').textContent = State.stats.invalid;
+                },
+
+                initCytoscape() {
+                    State.cy = cytoscape({
+                        container: document.getElementById('cy'),
+                        style: [{
+                                selector: 'node',
+                                style: {
+                                    'background-color': 'data(color)',
+                                    'label': 'data(label)',
+                                    'color': '#fff',
+                                    'text-valign': 'center',
+                                    'text-halign': 'center',
+                                    'font-size': '10px',
+                                    'width': 80,
+                                    'height': 80,
+                                    'border-width': 3,
+                                    'border-color': '#10b981',
+                                    'text-wrap': 'wrap',
+                                    'text-max-width': '70px'
+                                }
+                            },
+                            {
+                                selector: 'edge',
+                                style: {
+                                    'width': 2,
+                                    'line-color': '#667eea',
+                                    'target-arrow-color': '#667eea',
+                                    'target-arrow-shape': 'triangle',
+                                    'curve-style': 'bezier',
+                                    'arrow-scale': 1.5
+                                }
+                            }
+                        ],
+                        layout: {
+                            name: 'breadthfirst',
+                            directed: true,
+                            padding: 10,
+                            spacingFactor: 1.5
+                        }
+                    });
+
+                    State.cy.on('tap', 'node', (evt) => {
+                        const pulseId = evt.target.id();
+                        this.showPulseDetails(pulseId);
+                    });
+                },
+
+                renderGraph() {
+                    if (!State.currentTraceId || !State.cy) return;
+
+                    const trace = State.traces[State.currentTraceId];
+                    if (!trace) return;
+
+                    const elements = [];
+
+                    trace.pulses.forEach(pulse => {
+                        const canonical = Crypto.canonicalize(pulse);
+                        const hash = Crypto.hash(canonical);
+                        const isVerified = hash === pulse.canonicalHash &&
+                            Crypto.verify(pulse.author, canonical, pulse.signature);
+
+                        if (!isVerified) return;
+
+                        elements.push({
+                            data: {
+                                id: pulse.id,
+                                label: `${pulse.type}\n${pulse.payload.content.substring(0, 25)}...\n✓ SLIPS`,
+                                color: this.getPulseColor(pulse.type)
+                            }
+                        });
+
+                        pulse.dependsOn.forEach(depId => {
+                            elements.push({
+                                data: {
+                                    id: `${depId}-${pulse.id}`,
+                                    source: depId,
+                                    target: pulse.id
+                                }
+                            });
+                        });
+                    });
+
+                    State.cy.elements().remove();
+                    State.cy.add(elements);
+                    State.cy.layout({
+                        name: 'breadthfirst',
+                        directed: true,
+                        padding: 10,
+                        spacingFactor: 1.5
+                    }).run();
+                },
+
+                showPulseDetails(pulseId) {
+                    const trace = State.traces[State.currentTraceId];
+                    const pulse = trace.pulses.find(p => p.id === pulseId);
+                    if (!pulse) return;
+
+                    const canonical = Crypto.canonicalize(pulse);
+                    const hash = Crypto.hash(canonical);
+                    const isVerified = hash === pulse.canonicalHash &&
+                        Crypto.verify(pulse.author, canonical, pulse.signature);
+
+                    const details = `
+HI-DAO PCL × SLIPS Record
+═══════════════════════════════════
+Pulse ID: ${pulse.id}
+Type: ${pulse.type}
+Content: ${pulse.payload.content}
+Author: ${pulse.author.substring(0, 40)}...
+Timestamp: ${new Date(pulse.timestamp).toISOString()}
+Dependencies: ${pulse.dependsOn.length > 0 ? pulse.dependsOn.join(', ') : 'None'}
+
+Cryptographic Proof
+═══════════════════════════════════
+Hash: ${pulse.canonicalHash.substring(0, 50)}...
+Signature: ${pulse.signature.substring(0, 50)}...
+Verified: ${isVerified ? '✓ Valid' : '✗ INVALID'}
+
+SLIPS Compliance
+═══════════════════════════════════
+Version: ${SLIPS.VERSION}
+Schema: ${SLIPS.SCHEMA}
+Record Type: ${SLIPS.RECORD_TYPE}
+        `;
+
+                    alert(details);
+                },
+
+                getPulseColor(type) {
+                    const colors = {
+                        FRAME: '#3b82f6',
+                        CONTEXT: '#10b981',
+                        ASSUMPTION: '#f59e0b',
+                        INFERENCE: '#8b5cf6',
+                        CHECK: '#06b6d4',
+                        CONFLICT: '#ef4444',
+                        DECISION: '#ec4899',
+                        FINAL: '#14b8a6',
+                        EVALUATION: '#a855f7',
+                        IMPACT: '#0ea5e9'
+                    };
+                    return colors[type] || '#666';
+                }
+            };
+
+            // ═══════════════════════════════════════════════════════════
+            // UI MANAGEMENT
+            // ═══════════════════════════════════════════════════════════
+
+            const UI = {
+                init() {
+                    this.setupNavigation();
+                    this.setupIdentityModal();
+                    this.setupSubmissionForm();
+                    this.setupPCLControls();
+                    this.renderMarketplace();
+                    this.renderPendingContributions();
+                    this.updateStats();
+                },
+
+                setupNavigation() {
+                    document.querySelectorAll('.nav-tab').forEach(tab => {
+                        tab.addEventListener('click', () => {
+                            const viewId = tab.dataset.view;
+
+                            // Update tabs
+                            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                            tab.classList.add('active');
+
+                            // Update views
+                            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                            document.getElementById(viewId).classList.add('active');
+                        });
+                    });
+                },
+
+                setupIdentityModal() {
+                    document.getElementById('identity-btn').addEventListener('click', () => {
+                        document.getElementById('identity-modal').classList.add('active');
+                        this.updateIdentityModal();
+                    });
+
+                    document.getElementById('close-identity-modal').addEventListener('click', () => {
+                        document.getElementById('identity-modal').classList.remove('active');
+                    });
+
+                    document.getElementById('generate-did-btn').addEventListener('click', () => {
+                        const name = document.getElementById('identity-name').value.trim() || 'Anonymous';
+                        Identity.create(name);
+                        this.updateIdentityModal();
+                    });
+
+                    document.getElementById('export-identity-btn').addEventListener('click', () => {
+                        Identity.export();
+                    });
+                },
+
+                updateIdentityModal() {
+                    const createSection = document.getElementById('identity-create');
+                    const infoSection = document.getElementById('identity-info');
+
+                    if (State.identity) {
+                        createSection.classList.add('hidden');
+                        infoSection.classList.remove('hidden');
+                        document.getElementById('full-did').textContent = State.identity.did;
+                        document.getElementById('public-key').textContent = State.identity.publicKey;
+                        document.getElementById('private-key').textContent = State.identity.privateKey;
+                    } else {
+                        createSection.classList.remove('hidden');
+                        infoSection.classList.add('hidden');
+                    }
+                },
+
+                updateIdentityDisplay() {
+                    if (State.identity) {
+                        document.getElementById('did-short').textContent = State.identity.displayName;
+                    } else {
+                        document.getElementById('did-short').textContent = 'No Identity';
+                    }
+                },
+
+                setupSubmissionForm() {
+                    const uploadZone = document.getElementById('upload-zone');
+                    const fileInput = document.getElementById('file-input');
+
+                    uploadZone.addEventListener('click', () => fileInput.click());
+
+                    uploadZone.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        uploadZone.classList.add('dragging');
+                    });
+
+                    uploadZone.addEventListener('dragleave', () => {
+                        uploadZone.classList.remove('dragging');
+                    });
+
+                    uploadZone.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        uploadZone.classList.remove('dragging');
+                        if (e.dataTransfer.files.length > 0) {
+                            this.handleFiles(e.dataTransfer.files);
+                        }
+                    });
+
+                    fileInput.addEventListener('change', (e) => {
+                        if (e.target.files.length > 0) {
+                            this.handleFiles(e.target.files);
+                        }
+                    });
+
+                    document.getElementById('submit-contribution').addEventListener('click', () => {
+                        this.submitContribution();
+                    });
+
+                    // Update impact preview on code changes
+                    document.getElementById('code-content').addEventListener('input', () => {
+                        this.updateImpactPreview();
+                    });
+                },
+
+                handleFiles(files) {
+                    Array.from(files).forEach(file => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const content = e.target.result;
+                            document.getElementById('code-content').value = content;
+                            this.updateImpactPreview();
+                            UI.toast(`Loaded: ${file.name}`, 'success');
+                        };
+                        reader.readAsText(file);
+                    });
+                },
+
+                updateImpactPreview() {
+                    const code = document.getElementById('code-content').value;
+                    const lines = code.split('\n').length;
+                    const complexity = Math.min(100, lines * 2); // Simple heuristic
+
+                    document.getElementById('impact-preview').style.width = `${complexity}%`;
+                    document.getElementById('impact-preview').textContent = `${complexity}%`;
+                    document.getElementById('estimated-hi').textContent = Math.floor(complexity * 10);
+                    document.getElementById('estimated-ihi').textContent = Math.floor(complexity * 5);
+                },
+
+                submitContribution() {
+                    const data = {
+                        type: document.getElementById('contrib-type').value,
+                        title: document.getElementById('contrib-title').value.trim(),
+                        description: document.getElementById('contrib-description').value.trim(),
+                        tags: document.getElementById('contrib-tags').value.split(',').map(t => t.trim()).filter(t => t),
+                        code: document.getElementById('code-content').value,
+                        enableLoop: document.getElementById('enable-loop').checked,
+                        marketplaceListed: document.getElementById('marketplace-list').checked,
+                        license: document.getElementById('open-license').checked ? 'MIT' : 'Proprietary'
+                    };
+
+                    if (!data.title) {
+                        UI.toast('Please enter a title', 'warning');
+                        return;
+                    }
+
+                    if (!data.description) {
+                        UI.toast('Please enter a description', 'warning');
+                        return;
+                    }
+
+                    const contrib = HIDAO.submitContribution(data);
+                    if (contrib) {
+                        // Clear form
+                        document.getElementById('contrib-title').value = '';
+                        document.getElementById('contrib-description').value = '';
+                        document.getElementById('contrib-tags').value = '';
+                        document.getElementById('code-content').value = '';
+
+                        // Switch to evaluate view to see results
+                        document.querySelector('[data-view="evaluate"]').click();
+                        this.renderPendingContributions();
+                    }
+                },
+
+                setupPCLControls() {
+                    document.getElementById('create-trace').addEventListener('click', () => {
+                        const name = document.getElementById('trace-name').value.trim();
+                        if (!name) {
+                            UI.toast('Please enter a trace name', 'warning');
+                            return;
+                        }
+                        PCL.createTrace(name);
+                        document.getElementById('trace-name').value = '';
+                    });
+
+                    document.getElementById('add-pulse').addEventListener('click', () => {
+                        if (!State.currentTraceId) {
+                            UI.toast('Please select a trace first', 'warning');
+                            return;
+                        }
+
+                        const type = document.getElementById('pulse-type').value;
+                        const content = document.getElementById('pulse-content').value.trim();
+
+                        if (!content) {
+                            UI.toast('Please enter pulse content', 'warning');
+                            return;
+                        }
+
+                        PCL.addPulse(State.currentTraceId, {
+                            type,
+                            content
+                        });
+                        document.getElementById('pulse-content').value = '';
+                        UI.toast('Pulse added and cryptographically signed', 'success');
+                    });
+                },
+
+                renderMarketplace() {
+                    const grid = document.getElementById('marketplace-grid');
+                    grid.innerHTML = '';
+
+                    const items = Object.values(State.marketplace);
+                    if (items.length === 0) {
+                        grid.innerHTML = '<p style="color: #888; text-align: center; padding: 40px; grid-column: 1 / -1;">No items in marketplace yet</p>';
+                        return;
+                    }
+
+                    items.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = 'market-item';
+                        card.innerHTML = `
+                <div class="market-header">
+                    <div>
+                        <div class="market-title">${item.title}</div>
+                        <span class="contrib-type ${item.type}">${item.type}</span>
+                    </div>
+                    <div class="market-price">${item.price} HI</div>
+                </div>
+                <div class="market-desc">${item.description}</div>
+                <div class="market-stats">
+                    <div class="market-stat"><strong>Score:</strong> ${item.score}/100</div>
+                    <div class="market-stat"><strong>Downloads:</strong> ${item.downloads}</div>
+                </div>
+                <button class="btn" style="width: 100%; margin-top: 12px;">Purchase Access</button>
+            `;
+                        grid.appendChild(card);
+                    });
+                },
+
+                renderPendingContributions() {
+                    const list = document.getElementById('pending-contribs');
+                    list.innerHTML = '';
+
+                    const contribs = Object.values(State.contributions);
+                    if (contribs.length === 0) {
+                        list.innerHTML = '<p style="color: #888; text-align: center; padding: 40px;">No contributions yet</p>';
+                        return;
+                    }
+
+                    contribs.forEach(contrib => {
+                        const item = document.createElement('div');
+                        item.className = 'contrib-item';
+                        item.innerHTML = `
+                <div class="contrib-header">
+                    <div>
+                        <div class="contrib-title">${contrib.title}</div>
+                        <span class="contrib-type ${contrib.type}">${contrib.type}</span>
+                        ${contrib.enableLoop ? '<span class="loop-indicator">Autonomous Loop</span>' : ''}
+                    </div>
+                    <div class="contrib-score">${contrib.score}/100</div>
+                </div>
+                <div class="contrib-meta">
+                    ${contrib.evaluations.length} evaluations • 
+                    ${contrib.hiTokens} HI • 
+                    ${contrib.ihiTokens} iHI • 
+                    ${new Date(contrib.timestamp).toLocaleDateString()}
+                </div>
+            `;
+
+                        item.addEventListener('click', () => {
+                            this.showEvaluationDetails(contrib.id);
+                        });
+
+                        list.appendChild(item);
+                    });
+                },
+
+                showEvaluationDetails(contribId) {
+                    const contrib = State.contributions[contribId];
+                    const eval = State.evaluations[contribId];
+
+                    if (!eval) {
+                        document.getElementById('evaluation-results').innerHTML = '<p style="color: #888; text-align: center; padding: 40px;">Evaluation in progress...</p>';
+                        return;
+                    }
+
+                    const html = `
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: #667eea; margin-bottom: 12px;">${contrib.title}</h3>
+                <p style="color: #aaa; margin-bottom: 16px;">${contrib.description}</p>
+                <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                    <span class="contrib-type ${contrib.type}">${contrib.type}</span>
+                    <span class="verified-badge">✓ SLIPS Verified</span>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <h4 style="color: #667eea; margin-bottom: 12px;">AI Evaluator Scores</h4>
+                ${eval.evaluators.map(e => `
+                    <div style="background: rgba(42, 42, 62, 0.4); border: 1px solid #3a3a5e; border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong>${e.name}</strong>
+                            <span style="color: #10b981; font-weight: 700;">${e.score}/100</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: #aaa;">${e.reasoning}</div>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div style="background: rgba(102, 126, 234, 0.1); border: 1px solid #667eea; border-radius: 8px; padding: 16px;">
+                <div style="font-size: 0.9rem; color: #aaa; margin-bottom: 8px;">Consensus Score</div>
+                <div style="font-size: 2rem; font-weight: 700; color: #667eea;">${eval.consensusScore}/100</div>
+                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #3a3a5e;">
+                    <div style="font-size: 0.85rem; color: #aaa;">Rewards Allocated</div>
+                    <div style="display: flex; gap: 20px; margin-top: 8px;">
+                        <div><strong style="color: #10b981;">${contrib.hiTokens} HI</strong> tokens</div>
+                        <div><strong style="color: #8b5cf6;">${contrib.ihiTokens} iHI</strong> derivatives</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+                    document.getElementById('evaluation-results').innerHTML = html;
+                },
+
+                updateStats() {
+                    document.getElementById('stat-contributions').textContent = State.stats.contributions;
+                    document.getElementById('stat-hi-tokens').textContent = State.stats.hiTokens;
+                    document.getElementById('stat-ihi-tokens').textContent = State.stats.ihiTokens;
+                    document.getElementById('stat-loops').textContent = State.stats.loops;
+                    document.getElementById('stat-intelligence').textContent = State.stats.intelligence;
+                },
+
+                toast(message, type = 'info') {
+                    const container = document.getElementById('toast-container');
+                    const toast = document.createElement('div');
+                    toast.className = `toast ${type}`;
+                    toast.textContent = message;
+                    container.appendChild(toast);
+                    setTimeout(() => {
+                        toast.style.opacity = '0';
+                        setTimeout(() => toast.remove(), 300);
+                    }, 4000);
+                }
+            };
+
+            // ═══════════════════════════════════════════════════════════
+            // INITIALIZATION
+            // ═══════════════════════════════════════════════════════════
+
+            function init() {
+                console.log('🚀 HI-DAO v5.0 × Sovereign PCL × SLIPS');
+                console.log('═══════════════════════════════════════════════════════════');
+                console.log('Human-Intelligence Accelerator DAO');
+                console.log('Fully decentralized, self-improving intelligence fabric');
+                console.log('Every contribution is Ed25519 signed and SLIPS-compliant');
+                console.log('═══════════════════════════════════════════════════════════');
+
+                Identity.load();
+                HIDAO.loadFromStorage();
+                UI.init();
+                PCL.init();
+
+                console.log('✓ System initialized');
+                console.log(`Stats: ${State.stats.contributions} contributions, ${State.stats.traces} traces, ${State.stats.pulses} pulses`);
+                console.log(`Tokens: ${State.stats.hiTokens} HI, ${State.stats.ihiTokens} iHI`);
+                console.log(`Intelligence Score: ${State.stats.intelligence}`);
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+        })();
+    </script>
+</body>
+
+</html>
